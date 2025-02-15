@@ -16,6 +16,7 @@ workspace.members = [
     # "experiments/bigfish",
     "experiments/teamtalk",
     "experiments/huedmx",
+    "experiments/text_bare",
     "experiments/sdxl_remote",
     # === examples ===
     # "examples/bare_text",
@@ -33,7 +34,7 @@ workspace.members = [
     "examples/simple",
     "examples/simple_shader",
     "examples/chatgpt",
-    "examples/sdxl",
+    "examples/genai",
     "examples/slides",
     #"examples/graph",
     #"examples/image_viewer",
@@ -43,6 +44,9 @@ workspace.members = [
     # "comp_demo",
     "tools/cargo_makepad",
     "tools/auto_version",
+    "libs/array_vec",
+    "libs/btree",
+    "libs/btree_vec", "experiments/scroll",
 ]
 
 workspace.exclude = [

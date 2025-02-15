@@ -4,9 +4,9 @@ use makepad_derive_widget::*;
 use crate::{label::*, makepad_draw::*, view::*, widget::*};
 
 live_design! {
-    import makepad_draw::shader::std::*;
-    import makepad_widgets::label::LabelBase;
-    import makepad_widgets::view::ViewBase;
+    use makepad_draw::shader::std::*;
+    use makepad_widgets::label::LabelBase;
+    use makepad_widgets::view::ViewBase;
 
     REGULAR_TEXT = {
         font_size: 10,
@@ -145,9 +145,9 @@ pub struct PerformanceLiveGraph {
 }
 
 impl LiveHook for PerformanceLiveGraph {
-    fn after_new_from_doc(&mut self, _cx: &mut Cx) {
+    fn after_new_from_doc(&mut self, cx: &mut Cx) {
         self.label(id!(graph_label))
-            .set_text(&format!("{}", self.graph_label));
+            .set_text(cx, &format!("{}", self.graph_label));
     }
 }
 
@@ -169,7 +169,7 @@ impl PerformanceLiveGraph {
         }
 
         self.label(id!(current_y_entry))
-            .set_text(&format!("{}{}", y_entry, self.data_y_suffix));
+            .set_text(cx, &format!("{}{}", y_entry, self.data_y_suffix));
 
         self.redraw(cx);
     }
@@ -185,7 +185,7 @@ impl PerformanceLiveGraph {
         let graph_zero_baseline = graph_height - 20.;
 
         self.label(id!(graph_label))
-            .set_text(&format!("{}", self.graph_label));
+            .set_text(cx, &format!("{}", self.graph_label));
 
         self.draw_graph.begin(cx, walk, Layout::default());
 
@@ -236,7 +236,7 @@ impl PerformanceLiveGraph {
 }
 
 impl PerformanceLiveGraphRef {
-    pub fn add_y_entry(&mut self, cx: &mut Cx, y_entry: i64) {
+    pub fn add_y_entry(&self, cx: &mut Cx, y_entry: i64) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.add_y_entry(cx, y_entry);
         }

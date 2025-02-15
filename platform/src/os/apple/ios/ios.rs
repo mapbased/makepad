@@ -126,7 +126,10 @@ impl Cx {
                         self.handle_media_signals();
                         self.call_event_handler(&Event::Signal);
                     }
-                    self.handle_action_receiver();
+                    if SignalToUI::check_and_clear_action_signal() {
+                        self.handle_action_receiver();
+                    }
+
                     if self.handle_live_edit(){
                         // self.draw_shaders.ptr_to_item.clear();
                         // self.draw_shaders.fingerprints.clear();
@@ -248,6 +251,10 @@ impl Cx {
                 },
                 CxOsOp::MinimizeWindow(_window_id) => {
                 },
+                CxOsOp::Deminiaturize(_window_id) => {
+                },
+                CxOsOp::HideWindow(_window_id) => {
+                },
                 CxOsOp::MaximizeWindow(_window_id) => {
                 },
                 CxOsOp::RestoreWindow(_window_id) => {
@@ -310,7 +317,7 @@ impl Cx {
                 CxOsOp::SelectFileDialog(_) => todo!(),
                 CxOsOp::SaveFolderDialog(_) => todo!(),
                 CxOsOp::SelectFolderDialog(_) => todo!(),
-
+                CxOsOp::ShowInDock(_) =>{}
             }
         }
     }
@@ -357,6 +364,9 @@ impl CxOsApi for Cx {
     fn open_url(&mut self, _url:&str, _in_place:OpenUrlInPlace){
         crate::error!("open_url not implemented on this platform");
     }
+    
+    fn max_texture_width()->usize{16384}
+    
     /*
     fn web_socket_open(&mut self, _url: String, _rec: WebSocketAutoReconnect) -> WebSocket {
         todo!()

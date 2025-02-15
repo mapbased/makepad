@@ -3,11 +3,11 @@ use makepad_platform::live_atomic::*;
 
 
 live_design!{
-    import makepad_widgets::base::*;
-    import makepad_widgets::theme_desktop_dark::*;
-    import makepad_widgets::vectorline::*;
-    import makepad_draw::shader::std::*;
-    import makepad_example_ui_zoo::demofiletree::*;
+    use link::theme::*;
+    use link::shaders::*;
+    use link::widgets::*;
+    use makepad_widgets::vectorline::*;
+    use makepad_example_ui_zoo::demofiletree::*;
 
     COLOR_CONTAINER = (THEME_COLOR_D_1)
     COLOR_ACCENT = (THEME_COLOR_MAKEPAD)
@@ -73,7 +73,7 @@ live_design!{
             caption_bar = {
                 visible: true,
                 margin: {left: -100},
-                caption_label = { label = {text: "Makepad UI Zoo"} }
+                caption_label = { label = {text: "Makepad UI Zoo "} }
             },
 
             body = <View> {
@@ -113,7 +113,8 @@ live_design!{
                         align: { x: 0., y: 0.}
                         flow: Right,
                         spacing: (THEME_SPACE_2)
-                        <P> { text: "TestButton", width: Fit}
+                        <P> { text: "TestLabel", width: Fit}
+                        <Vr> {} 
                         <LinkLabel> { text: "TestButton", width: Fit}
                         <CheckBox> { text: "TestButton"}
                         <CheckBoxToggle> { text: "TestButton"}
@@ -374,30 +375,30 @@ live_design!{
                             <H4> { text: "Inline Label", width: 175.}
                             <TextInput> { empty_message: "Inline Label" }
                         }
-                        <View> {
-                            height: Fit, width: Fill,
-                            spacing: (THEME_SPACE_2),
-                            <H4> { text: "Secret", width: 175.}
-                            <TextInput> { text: "1234567", empty_message: "Password", secret: true }
-                        }
-                        <View> {
-                            height: Fit, width: Fill,
-                            spacing: (THEME_SPACE_2),
-                            <H4> { text: "On focus select all", width: 175.}
-                            <TextInput> { text: "Lorem Ipsum", empty_message: "Inline Label", on_focus_select_all: true }
-                        }
-                        <View> {
-                            height: Fit, width: Fill,
-                            spacing: (THEME_SPACE_2),
-                            <H4> { text: "Read only", width: 175.}
-                            <TextInput> { text: "You can't change me", read_only: true }
-                        }
-                        <View> {
-                            height: Fit, width: Fill,
-                            spacing: (THEME_SPACE_2),
-                            <H4> { text: "ASCII only", width: 175.}
-                            <TextInput> { empty_message: "No fancy characters", ascii_only: true }
-                        }
+                        // <View> {
+                        //     height: Fit, width: Fill,
+                        //     spacing: (THEME_SPACE_2),
+                        //     <H4> { text: "Secret", width: 175.}
+                        //     <TextInput> { text: "1234567", empty_message: "Password", secret: true }
+                        // }
+                        // <View> {
+                        //     height: Fit, width: Fill,
+                        //     spacing: (THEME_SPACE_2),
+                        //     <H4> { text: "On focus select all", width: 175.}
+                        //     <TextInput> { text: "Lorem Ipsum", empty_message: "Inline Label", on_focus_select_all: true }
+                        // }
+                        // <View> {
+                        //     height: Fit, width: Fill,
+                        //     spacing: (THEME_SPACE_2),
+                        //     <H4> { text: "Read only", width: 175.}
+                        //     <TextInput> { text: "You can't change me", read_only: true }
+                        // }
+                        // <View> {
+                        //     height: Fit, width: Fill,
+                        //     spacing: (THEME_SPACE_2),
+                        //     <H4> { text: "ASCII only", width: 175.}
+                        //     <TextInput> { empty_message: "No fancy characters", ascii_only: true }
+                        // }
                         // <View> {
                         //     height: Fit, width: Fill,
                         //     spacing: (THEME_SPACE_2),
@@ -444,6 +445,7 @@ live_design!{
                     <ZooGroup> {
                         width: Fill, height: Fit,
                         flow: Right,
+                        spacing: 10.0,
                         align: { x: 0., y: 0.}
                         <View> {
                             width: Fill, height: Fit,
@@ -452,7 +454,7 @@ live_design!{
                             <Slider> { text: "label_align", label_align: { x: 0.5, y: 0. } }
                             <Slider> { text: "min/max", min: 0., max: 100. }
                             <Slider> { text: "precision", precision: 20 }
-                            <Slider> { text: "step", step: 0.1 }
+                            <Slider> { text: "stepped", step: 0.1 }
                         }
                         <View> {
                             width: Fill, height: Fit,
@@ -461,12 +463,272 @@ live_design!{
                             <SliderBig> { text: "label_align", label_align: { x: 0.5, y: 0. } }
                             <SliderBig> { text: "min/max", min: 0., max: 100. }
                             <SliderBig> { text: "precision", precision: 20 }
-                            <SliderBig> { text: "step", step: 0.1 }
+                            <SliderBig> { text: "stepped", step: 0.1 }
+                        }
+                        <View> {
+                            width: Fill, height: Fit,
+                            flow: Down,
+                            <SliderAlt1> {
+                                text: "Colored",
+                                draw_slider: {
+                                    val_color_a: (#FFCC00),
+                                    val_color_b: #f00,
+                                    handle_color_a: #0,
+                                    handle_color_b: #0,
+                               }
+                            }
+                            <SliderAlt1> {
+                                text: "Solid",
+                                draw_text: {
+                                    color: #0ff;
+                                }
+                                draw_slider: {
+                                    val_color_a: #f08,
+                                    val_color_b: #f08,
+                                    handle_color_a: #FFFF,
+                                    handle_color_b: #FFF0,
+                                }
+                            }
+                            <SliderAlt1> {
+                                text: "Solid",
+                                draw_slider: {
+                                    val_color_a: #6,
+                                    val_color_b: #6,
+                                    handle_color_a: #0,
+                                    handle_color_b: #C,
+                                }
+                            }
+                            <SliderAlt1> { text: "min/max", min: 0., max: 100. }
+                            <SliderAlt1> { text: "precision", precision: 20 }
+                            <SliderAlt1> { text: "stepped", step: 0.1 }
+                            <SliderAlt1> {
+                                text: "label_size",
+                                draw_slider: {label_size: 150. },
+                            }
                         }
                     }
                 }
 
+                <View> {
+                    width: Fill, height: Fit,
+                    flow: Right,
+                    <Rotary> {
+                        width: 100, height: 100,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 90.,
+                            width: 20.
+                            padding: 2.,
+                        }
+                    }
+                    <Rotary> {
+                        width: 100, height: 200,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 60.,
+                            width: 10.,
+                            padding: 4.,
+                        }
+                    }
+                    <Rotary> {
+                        width: 200, height: 100,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 75.,
+                            width: 20.
+                            padding: 4,
+                        }
+                    }
+                    <Rotary> {
+                        width: 200, height: 150,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 90.,
+                            width: 20.
+                            padding: 4.,
+                        }
+                    }
+                    <Rotary> {
+                        width: Fill, height: 150,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 60.,
+                            width: 20.
+                            padding: 2.,
+                        }
+                    }
+                }
+                <View> {
+                    width: Fill, height: Fit,
+                    flow: Right,
+                    <Rotary> {
+                        width: 100., height: 100.,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 0.,
+                            width: 20.
+                            padding: 0.,
+                        }
+                    }
+                    <Rotary> {
+                        width: 120., height: 120.,
+                        text: "Solid",
+                        draw_text: {
+                            color: #0ff;
+                        }
+                        draw_slider: {
+                            val_color_a: #ff0,
+                            val_color_b: #f00,
+                            handle_color: #f,
+                            gap: 180.,
+                            width: 20.,
+                            padding: 2.,
+                        }
+                    }
+                    <Rotary> {
+                        width: 120., height: 120.,
+                        text: "Solid",
+                        draw_slider: {
+                            val_color_a: #0ff,
+                            val_color_b: #ff0,
+                            handle_color: #f,
+                            gap: 90.,
+                            width: 20.,
+                            padding: 2.,
+                        }
+                    }
+                    <Rotary> {
+                        width: 100., height: 90.,
+                        text: "Solid",
+                        draw_slider: {
+                            gap: 90.,
+                            padding: 10.,
+                            width: 20.,
+                            padding: 2.
+                            handle_color: #f0f,
+                        }
+                    }
+                    <Rotary> {
+                        width: 150., height: 150.,
+                        text: "Solid",
+                        draw_slider: {
+                            val_color_a: #0ff,
+                            val_color_b: #0ff,
+                            gap: 180.,
+                            padding: 4.,
+                            width: 6.,
+                        }
+                    }
+                    <Rotary> {
+                        width: 150., height: 150.,
+                        text: "Solid",
+                        draw_slider: {
+                            gap: 0.,
+                            width: 10.0,
+                            padding: 4.,
+                        }
+                    }
+                }
+                
+                <View> {
+                    width: Fill, height: Fit,
+                    flow: Right,
+                    <RotaryFlat> {
+                        width: 100., height: 100.,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 0.,
+                            width: 20.
+                            padding: 0.,
+                        }
+                    }
+                    <RotaryFlat> {
+                        width: 120., height: 120.,
+                        text: "Solid",
+                        draw_text: {
+                            color: #0ff;
+                        }
+                        draw_slider: {
+                            val_color_a: #ff0,
+                            val_color_b: #f00,
+                            handle_color: #f,
+                            gap: 180.,
+                            width: 20.,
+                            padding: 2.,
+                        }
+                    }
+                    <RotaryFlat> {
+                        width: 120., height: 120.,
+                        text: "Solid",
+                        draw_slider: {
+                            val_color_a: #0ff,
+                            val_color_b: #ff0,
+                            handle_color: #f,
+                            gap: 90.,
+                            width: 20.,
+                            padding: 2.,
+                        }
+                    }
+                    <RotaryFlat> {
+                        width: 100., height: 90.,
+                        text: "Solid",
+                        draw_slider: {
+                            gap: 90.,
+                            padding: 10.,
+                            width: 20.,
+                            handle_color: #f0f,
+                        }
+                    }
+                    <RotaryFlat> {
+                        width: 150., height: 150.,
+                        text: "Solid",
+                        draw_slider: {
+                            val_color_a: #0ff,
+                            val_color_b: #0ff,
+                            gap: 180.,
+                            padding: 4.,
+                            width: 6.,
+                        }
+                    }
+                    <RotaryFlat> {
+                        width: Fill, height: 150.,
+                        text: "Solid",
+                        draw_slider: {
+                            val_color_a: #8;
+                            val_color_b: #ff0;
+                            gap: 75.,
+                            width: 40.0,
+                            padding: 4.,
+                        }
+                    }
+                }
+                <View> {
+                    width: Fill, height: Fit,
+                    flow: Right,
+                    <RotarySolid> {
+                        width: 100, height: 100,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 90.,
+                        }
+                    }
+                    <RotarySolid> {
+                        width: 200, height: 150,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 180.,
+                        }
+                    }
+                    <RotarySolid> {
+                        width: Fill, height: 150,
+                        text: "Colored",
+                        draw_slider: {
+                            gap: 60.,
+                        }
+                    }
+                }
                 <ZooHeader> {
+                    title = {text:"<DropDown>"}
                     title = {text:"<DropDown>"}
                     <ZooDesc> {text:"DropDown control. This control currently needs to be databound which needs some plumbing. In this sample there is a binding context struct in the main app struct - which gets bound on app start - and updated during handle_actions."}
                     <ZooGroup> {
@@ -485,25 +747,25 @@ live_design!{
                     }
                 }
 
-                <ZooHeader> {
-                    title = { text:"<FoldHeader>" }
-                    <ZooDesc> { text:"This widget allows you to have a header with a foldbutton (has to be named fold_button for the magic to work)" }
-                    <ZooGroup> {
-                        thefoldheader= <FoldHeader> {
-                            header: <View> {
-                                height: Fit
-                                align: {x: 0., y: 0.5}
-                                fold_button = <FoldButton> {} <P> {text: "Fold me!"}
-                            }
-                            body: <View> {
-                                width: Fill, height: Fit
-                                show_bg: false,
-                                padding: 5.0,
-                                <P> { text:"This is the body that can be folded away" }
-                            }
-                        }
-                    }
-                }
+                // <ZooHeader> {
+                //     title = { text:"<FoldHeader>" }
+                //     <ZooDesc> { text:"This widget allows you to have a header with a foldbutton (has to be named fold_button for the magic to work)" }
+                //     <ZooGroup> {
+                //         thefoldheader= <FoldHeader> {
+                //             header: <View> {
+                //                 height: Fit
+                //                 align: {x: 0., y: 0.5}
+                //                 fold_button = <FoldButton> {} <P> {text: "Fold me!"}
+                //             }
+                //             body: <View> {
+                //                 width: Fill, height: Fit
+                //                 show_bg: false,
+                //                 padding: 5.0,
+                //                 <P> { text:"This is the body that can be folded away" }
+                //             }
+                //         }
+                //     }
+                // }
 
                 <ZooHeader> {
                     title = {text:"<Html>"}
@@ -879,221 +1141,596 @@ live_design!{
                 }
 
                 // TODO: SHOW
+                // <ZooHeader> {
+                //     title = {text:"<Dock>"}
+                //     <ZooDesc> {text:"Dock"}
+                //     <CachedRoundedView> {
+                //         draw_bg: { radius: (THEME_CONTAINER_CORNER_RADIUS) }
+                //         width: Fill, height: Fit,
+                //             <View> {
+                //                 height: Fit, width: Fill
+                //                 show_bg: true,
+                //                 draw_bg: { color: (THEME_COLOR_BG_CONTAINER) }
+                //                 <Dock> {
+                //                     height: 500., width: Fill
+
+                //                     root = Splitter {
+                //                         axis: Horizontal,
+                //                         align: FromA(300.0),
+                //                         a: tab_set_1,
+                //                         b: tab_set_2
+                //                     }
+
+                //                     tab_set_1 = Tabs {
+                //                         tabs: [tab_a, tab_b],
+                //                         selected: 1
+                //                     }
+
+                //                     tab_set_2 = Tabs {
+                //                         tabs: [tab_c, tab_d, tab_e, tab_f],
+                //                         selected: 1
+                //                     }
+
+                //                     tab_a = Tab {
+                //                         name: "Tab A"
+                //                         template: PermanentTab,
+                //                         kind: Container_A
+                //                     }
+
+                //                     tab_b = Tab {
+                //                         name: "Tab B"
+                //                         template: PermanentTab,
+                //                         kind: Container_B
+                //                     }
+
+                //                     tab_c = Tab {
+                //                         name: "Tab C"
+                //                         template: CloseableTab,
+                //                         kind: Container_C
+                //                     }
+
+                //                     tab_d = Tab {
+                //                         name: "Tab D"
+                //                         template: CloseableTab,
+                //                         kind: Container_D
+                //                     }
+
+                //                     tab_e = Tab {
+                //                         name: "Tab E"
+                //                         template: CloseableTab,
+                //                         kind: Container_E
+                //                     }
+
+                //                     tab_f = Tab {
+                //                         name: "Tab F"
+                //                         template: CloseableTab,
+                //                         kind: Container_F
+                //                     }
+
+                //                     Container_A = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         padding: 10.,
+                //                         <Label> {text: "Hallo"}
+                //                     }
+
+                //                     Container_B = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         padding: 10.,
+                //                         <Label> {text: "Kuckuck"}
+                //                     }
+
+                //                     Container_C = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         padding: 10.,
+                //                         <Label> {text: "Ahoy"}
+                //                     }
+
+                //                     Container_D = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         padding: 10.,
+                //                         <Label> {text: "Hi"}
+                //                     }
+
+                //                     Container_E = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         padding: 10.,
+                //                         <Label> {text: "Ahoy"}
+                //                     }
+
+                //                     Container_F = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         padding: 10.,
+                //                         <Label> {text: "Hi"}
+                //                     }
+                //                 }
+
+                //             }
+                //         }
+                //     }
+
+                // <ZooHeader> {
+                //     title = {text:"<DockMinimal>"}
+                //     <ZooDesc> {text:"DockMinimal"}
+                //     <CachedRoundedView> {
+                //         draw_bg: { radius: (THEME_CONTAINER_CORNER_RADIUS) }
+                //         width: Fill, height: Fit,
+                //             <View> {
+                //                 height: Fit, width: Fill
+                //                 show_bg: true,
+                //                 draw_bg: { color: (THEME_COLOR_BG_CONTAINER) }
+                //                 <DockMinimal> {
+                //                     height: 500., width: Fill
+
+                //                     root = Splitter {
+                //                         axis: Horizontal,
+                //                         align: FromA(300.0),
+                //                         a: tab_set_1,
+                //                         b: tab_set_2
+                //                     }
+
+                //                     tab_set_1 = Tabs {
+                //                         tabs: [tab_a, tab_b],
+                //                         selected: 1
+                //                     }
+
+                //                     tab_set_2 = Tabs {
+                //                         tabs: [tab_c, tab_d, tab_e, tab_f],
+                //                         selected: 1
+                //                     }
+
+                //                     tab_a = Tab {
+                //                         name: "Tab A"
+                //                         template: CloseableTab,
+                //                         kind: Container_A
+                //                     }
+
+                //                     tab_b = Tab {
+                //                         name: "Tab B"
+                //                         template: PermanentTab,
+                //                         kind: Container_B
+                //                     }
+
+                //                     tab_c = Tab {
+                //                         name: "Tab C"
+                //                         template: CloseableTab,
+                //                         kind: Container_C
+                //                     }
+
+                //                     tab_d = Tab {
+                //                         name: "Tab D"
+                //                         template: CloseableTab,
+                //                         kind: Container_D
+                //                     }
+
+                //                     tab_e = Tab {
+                //                         name: "Tab E"
+                //                         template: CloseableTab,
+                //                         kind: Container_E
+                //                     }
+
+                //                     tab_f = Tab {
+                //                         name: "Tab F"
+                //                         template: CloseableTab,
+                //                         kind: Container_F
+                //                     }
+
+                //                     Container_A = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         padding: 10.,
+                //                         draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
+                //                         <Label> {text: "Hallo"}
+                //                     }
+
+                //                     Container_B = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
+                //                         padding: 10.,
+                //                         <Label> {text: "Kuckuck"}
+                //                     }
+
+                //                     Container_C = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
+                //                         padding: 10.,
+                //                         <Label> {text: "Ahoy"}
+                //                     }
+
+                //                     Container_D = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
+                //                         padding: 10.,
+                //                         <Label> {text: "Hi"}
+                //                     }
+
+                //                     Container_E = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
+                //                         padding: 10.,
+                //                         <Label> {text: "Ahoy"}
+                //                     }
+
+                //                     Container_F = <RectView> {
+                //                         height: Fill, width: Fill
+                //                         draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
+                //                         padding: 10.,
+                //                         <Label> {text: "Hi"}
+                //                     }
+                //                 }
+
+                //             }
+                //         }
+                //     }
+
                 <ZooHeader> {
-                    title = {text:"<Dock>"}
-                    <ZooDesc> {text:"Dock"}
-                    <CachedRoundedView> {
+                    title = {text:"Docs tests"}
+                    <ZooDesc> {text:"Docs tests"}
+                    <RoundedView> {
                         draw_bg: { radius: (THEME_CONTAINER_CORNER_RADIUS) }
                         width: Fill, height: Fit,
                             <View> {
                                 height: Fit, width: Fill
-                                show_bg: true,
+                                show_bg: false,
+                                margin: { bottom: 200.}
                                 draw_bg: { color: (THEME_COLOR_BG_CONTAINER) }
-                                <Dock> {
-                                    height: 500., width: Fill
+                                spacing: 5.0,
+                                flow: Down,
+                                <H3> { text: "Button" }
+                                <H4> { text: "Basic"}
+                                <Button> { text: "I can be clicked" } // Default button with a custom label.
 
-                                    root = Splitter {
-                                        axis: Horizontal,
-                                        align: FromA(300.0),
-                                        a: tab_set_1,
-                                        b: tab_set_2
-                                    }
-
-                                    tab_set_1 = Tabs {
-                                        tabs: [tab_a, tab_b],
-                                        selected: 1
-                                    }
-
-                                    tab_set_2 = Tabs {
-                                        tabs: [tab_c, tab_d, tab_e, tab_f],
-                                        selected: 1
-                                    }
-
-                                    tab_a = Tab {
-                                        name: "Tab A"
-                                        template: PermanentTab,
-                                        kind: Container_A
-                                    }
-
-                                    tab_b = Tab {
-                                        name: "Tab B"
-                                        template: PermanentTab,
-                                        kind: Container_B
-                                    }
-
-                                    tab_c = Tab {
-                                        name: "Tab C"
-                                        template: CloseableTab,
-                                        kind: Container_C
-                                    }
-
-                                    tab_d = Tab {
-                                        name: "Tab D"
-                                        template: CloseableTab,
-                                        kind: Container_D
-                                    }
-
-                                    tab_e = Tab {
-                                        name: "Tab E"
-                                        template: CloseableTab,
-                                        kind: Container_E
-                                    }
-
-                                    tab_f = Tab {
-                                        name: "Tab F"
-                                        template: CloseableTab,
-                                        kind: Container_F
-                                    }
-
-                                    Container_A = <RectView> {
-                                        height: Fill, width: Fill
-                                        padding: 10.,
-                                        <Label> {text: "Hallo"}
-                                    }
-
-                                    Container_B = <RectView> {
-                                        height: Fill, width: Fill
-                                        padding: 10.,
-                                        <Label> {text: "Kuckuck"}
-                                    }
-
-                                    Container_C = <RectView> {
-                                        height: Fill, width: Fill
-                                        padding: 10.,
-                                        <Label> {text: "Ahoy"}
-                                    }
-
-                                    Container_D = <RectView> {
-                                        height: Fill, width: Fill
-                                        padding: 10.,
-                                        <Label> {text: "Hi"}
-                                    }
-
-                                    Container_E = <RectView> {
-                                        height: Fill, width: Fill
-                                        padding: 10.,
-                                        <Label> {text: "Ahoy"}
-                                    }
-
-                                    Container_F = <RectView> {
-                                        height: Fill, width: Fill
-                                        padding: 10.,
-                                        <Label> {text: "Hi"}
-                                    }
+                                <H4> { text: "Typical"}
+                                <Button> {
+                                    text: "I can be clicked", // Text label.
+                                    draw_bg: {
+                                        bodytop: #3, // Set the hover-state color.
+                                        bodybottom: #f00, // Set the pressed-state color.
+                                    },
+                                    height: Fit, // Element assumes height of its children.
+                                    width: Fit, // Element expands to use all available horizontal space.
+                                    margin: 0.0, // Homogenous spacing of 10.0 around the element.
+                                    padding: 10.  // Homogenous spacing of 7.5 between all the element's
+                                                // borders and its content.
                                 }
 
-                            }
-                        }
-                    }
+                                <H4> { text: "Advanced"}
+                                <Button> {
+                                // Allows instantiation of customly styled elements as i.e. <MyButton> {}.
 
-                <ZooHeader> {
-                    title = {text:"<DockMinimal>"}
-                    <ZooDesc> {text:"DockMinimal"}
-                    <CachedRoundedView> {
-                        draw_bg: { radius: (THEME_CONTAINER_CORNER_RADIUS) }
-                        width: Fill, height: Fit,
-                            <View> {
-                                height: Fit, width: Fill
-                                show_bg: true,
-                                draw_bg: { color: (THEME_COLOR_BG_CONTAINER) }
-                                <DockMinimal> {
-                                    height: 500., width: Fill
+                                    // BUTTON SPECIFIC PROPERTIES
 
-                                    root = Splitter {
-                                        axis: Horizontal,
-                                        align: FromA(300.0),
-                                        a: tab_set_1,
-                                        b: tab_set_2
+                                    draw_bg: { // Shader object that draws the bg.
+                                            fn pixel(self) -> vec4 {
+                                            return mix( // State transition animations.
+                                                mix(
+                                                    #800,
+                                                    mix(#800, #f, 0.5),
+                                                    self.hover
+                                                ),
+                                                #00f,
+                                                self.pressed
+                                            )
+                                        }
+                                    },
+
+                                    draw_icon: { // Shader object that draws the icon.
+                                        svg_file: dep("crate://self/resources/Icon_Favorite.svg"),
+                                        // Icon file dependency.
+
+                                        fn get_color(self) -> vec4 { // Overwrite the shader's fill method.
+                                            return mix( // State transition animations.
+                                                mix(
+                                                    #f0f,
+                                                    #fff,
+                                                    self.hover
+                                                ),
+                                                #000,
+                                                self.pressed
+                                            )
+                                        }
                                     }
 
-                                    tab_set_1 = Tabs {
-                                        tabs: [tab_a, tab_b],
-                                        selected: 1
+                                    // draw_text: { // Shader object that draws the icon.
+                                    //     wrap: Word, // Wraps text between words.
+                                    //     text_style: {
+                                    //     // Controls the appearance of text.
+                                    //         font: {path: dep("crate://self/resources/GoNotoKurrent-Bold.ttf")},
+                                    //         // Font file dependency.
+
+                                    //         font_size: 12.0, // Font-size of 12.0.
+                                    //     }
+
+                                    //     fn get_color(self) -> vec4 { // Overwrite the shader's fill method.
+                                    //         return mix( // State transition animations.
+                                    //             mix(
+                                    //                 self.color,
+                                    //                 self.bodytop,
+                                    //                 self.bodybottom
+                                    //             ),
+                                    //             self.color_pressed,
+                                    //             self.pressed
+                                    //         )
+                                    //     }
+                                    // }
+
+                                    grab_key_focus: true, // Keyboard gets focus when clicked.
+
+                                    icon_walk: {
+                                        margin: 10.,
+                                        width: 16.,
+                                        height: Fit
                                     }
 
-                                    tab_set_2 = Tabs {
-                                        tabs: [tab_c, tab_d, tab_e, tab_f],
-                                        selected: 1
+                                    label_walk: {
+                                        margin: 0.,
+                                        width: Fit,
+                                        height: Fit,
                                     }
 
-                                    tab_a = Tab {
-                                        name: "Tab A"
-                                        template: CloseableTab,
-                                        kind: Container_A
+                                    text: "I can be clicked", // Text label.
+
+                                    animator: { // State change triggered animations.
+                                        hover = { // State
+                                            default: off // The state's starting point.
+                                            off = { // Behavior when the animation is started to the off-state
+                                                from: { // Behavior depending on the prior states
+                                                    all: Forward {duration: 0.1}, // Default animation direction and speed in secs.
+                                                    pressed: Forward {duration: 0.25} // Direction and speed for 'pressed' in secs.
+                                                }
+                                                apply: { // Shader methods to animate
+                                                    draw_bg: { pressed: 0.0, hover: 0.0 } // Timeline target positions for the given states.
+                                                    draw_icon: { pressed: 0.0, hover: 0.0 }
+                                                    draw_text: { pressed: 0.0, hover: 0.0 }
+                                                }
+                                            }
+
+                                            on = { // Behavior when the animation is started to the on-state
+                                                from: {
+                                                    all: Forward {duration: 0.1},
+                                                    pressed: Forward {duration: 0.5}
+                                                }
+                                                apply: {
+                                                    draw_bg: { pressed: 0.0, hover: [{time: 0.0, value: 1.0}] },
+                                                    // pressed: 'pressed' timeline target position
+                                                    // hover, time: Normalized timeline from 0.0 - 1.0. 'duration' then determines the actual playback duration of this animation in seconds.
+                                                    // hover, value: target timeline position
+                                                    draw_icon: { pressed: 0.0, hover: [{time: 0.0, value: 1.0}] },
+                                                    draw_text: { pressed: 0.0, hover: [{time: 0.0, value: 1.0}] }
+                                                }
+                                            }
+                                
+                                            pressed = { // Behavior when the animation is started to the pressed-state
+                                                from: {all: Forward {duration: 0.2}}
+                                                apply: {
+                                                    draw_bg: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0}, 
+                                                    draw_icon: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0},
+                                                    draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0}
+                                                }
+                                            }
+                                        }
                                     }
 
-                                    tab_b = Tab {
-                                        name: "Tab B"
-                                        template: PermanentTab,
-                                        kind: Container_B
-                                    }
+                                    // LAYOUT PROPERTIES
 
-                                    tab_c = Tab {
-                                        name: "Tab C"
-                                        template: CloseableTab,
-                                        kind: Container_C
-                                    }
+                                    height: Fit,
+                                    // Element assumes the height of its children.
 
-                                    tab_d = Tab {
-                                        name: "Tab D"
-                                        template: CloseableTab,
-                                        kind: Container_D
-                                    }
+                                    width: Fill,
+                                    // Element assumes the width of its children.
 
-                                    tab_e = Tab {
-                                        name: "Tab E"
-                                        template: CloseableTab,
-                                        kind: Container_E
-                                    }
+                                    margin: 5.0
+                                    padding: { top: 3.0, right: 6.0, bottom: 3.0, left: 6.0 },
+                                    // Individual space between the element's border and its content
+                                    // for top and left.
 
-                                    tab_f = Tab {
-                                        name: "Tab F"
-                                        template: CloseableTab,
-                                        kind: Container_F
-                                    }
+                                    flow: Right,
+                                    // Stacks children from left to right.
 
-                                    Container_A = <RectView> {
-                                        height: Fill, width: Fill
-                                        padding: 10.,
-                                        draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
-                                        <Label> {text: "Hallo"}
-                                    }
+                                    spacing: 5.0,
+                                    // A spacing of 10.0 between children.
 
-                                    Container_B = <RectView> {
-                                        height: Fill, width: Fill
-                                        draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
-                                        padding: 10.,
-                                        <Label> {text: "Kuckuck"}
-                                    }
-
-                                    Container_C = <RectView> {
-                                        height: Fill, width: Fill
-                                        draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
-                                        padding: 10.,
-                                        <Label> {text: "Ahoy"}
-                                    }
-
-                                    Container_D = <RectView> {
-                                        height: Fill, width: Fill
-                                        draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
-                                        padding: 10.,
-                                        <Label> {text: "Hi"}
-                                    }
-
-                                    Container_E = <RectView> {
-                                        height: Fill, width: Fill
-                                        draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
-                                        padding: 10.,
-                                        <Label> {text: "Ahoy"}
-                                    }
-
-                                    Container_F = <RectView> {
-                                        height: Fill, width: Fill
-                                        draw_bg: { color: (THEME_COLOR_D_HIDDEN)}
-                                        padding: 10.,
-                                        <Label> {text: "Hi"}
-                                    }
+                                    align: { x: 0.5, y: 0.5 },
+                                    // Positions children at the left (x) bottom (y) corner of the parent.
                                 }
+
+                                <H4> { text: "Preset: ButtonFlat"}
+                                <ButtonFlat> {
+                                    text: "Flat Button"
+                                }
+
+                                <H4> { text: "Preset: ButtonFlatter"}
+                                <ButtonFlatter> {
+                                    draw_icon: {
+                                        color: #f00,
+                                        svg_file: dep("crate://self/resources/Icon_Favorite.svg"),
+                                    }
+                                    text: "Flatter Button"
+                                }
+
+                                <H3> { text: "Checkbox" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "ColorPicker" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Dock" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "DropDown" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "ExpandablePanel" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "FileTree" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "FlatList" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "FoldButton" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "FoldHeader" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Html" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Icon" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Image" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "ImageBlend" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Label" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "LinkLabel" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Markdown" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "NavControl" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "PageFlip" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Piano" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "PopupMenu" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "PortalList" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "RadioButton" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "RotatedImage" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "ScrollBar" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "ScrollBars" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "SlidePanel" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Slider" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "SlidesView" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Splitter" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "StackNavigation" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Tab" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "TabBar" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "TabCloseButton" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "TextInput" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "VectorLine" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "Video" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
+                                <H3> { text: "View" }
+                                <H4> { text: "Basic"}
+                                <H4> { text: "Typical"}
+                                <H4> { text: "Advanced"}
+
 
                             }
                         }
@@ -1213,28 +1850,28 @@ live_design!{
             log!("TEXTBOX CHANGED {}", self.counter);
             self.counter += 1;
             let lbl = self.ui.label(id!(simpletextinput_outputbox));
-            lbl.set_text_and_redraw(cx,&format!("{} {}" , self.counter, txt));
+            lbl.set_text(cx,&format!("{} {}" , self.counter, txt));
         }
 
         if self.ui.button(id!(basicbutton)).clicked(&actions) {
             log!("BASIC BUTTON CLICKED {}", self.counter);
             self.counter += 1;
             let btn = self.ui.button(id!(basicbutton));
-            btn.set_text_and_redraw(cx,&format!("Clicky clicky! {}", self.counter));
+            btn.set_text(cx,&format!("Clicky clicky! {}", self.counter));
         }
 
         if self.ui.button(id!(styledbutton)).clicked(&actions) {
             log!("STYLED BUTTON CLICKED {}", self.counter);
             self.counter += 1;
             let btn = self.ui.button(id!(styledbutton));
-            btn.set_text_and_redraw(cx,&format!("Styled button clicked: {}", self.counter));
+            btn.set_text(cx,&format!("Styled button clicked: {}", self.counter));
         }
 
         if self.ui.button(id!(iconbutton)).clicked(&actions) {
             log!("ICON BUTTON CLICKED {}", self.counter);
             self.counter += 1;
             let btn = self.ui.button(id!(iconbutton));
-            btn.set_text_and_redraw(cx,&format!("Icon button clicked: {}", self.counter));
+            btn.set_text(cx,&format!("Icon button clicked: {}", self.counter));
         }
 
 
@@ -1242,7 +1879,7 @@ live_design!{
             log!("CHECK BUTTON CLICKED {} {}", self.counter, check);
             self.counter += 1;
             let lbl = self.ui.label(id!(simplecheckbox_output));
-            lbl.set_text_and_redraw(cx,&format!("{} {}" , self.counter, check));
+            lbl.set_text(cx,&format!("{} {}" , self.counter, check));
         }
 
         if self.ui.fold_button(id!(folderbutton)).opening(actions) {

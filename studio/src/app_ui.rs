@@ -1,16 +1,17 @@
 use crate::makepad_widgets::*;
 
 live_design!{
-    import makepad_draw::shader::std::*;
-    import makepad_widgets::base::*;
-    import makepad_widgets::theme_desktop_dark::*;
-    import makepad_studio::studio_editor::StudioCodeEditor;
-    import makepad_studio::ai_chat::ai_chat_view::AiChatView;
-    import makepad_studio::studio_file_tree::StudioFileTree;
-    import makepad_studio::run_view::RunView;
-    import makepad_studio::log_list::LogList;
-    import makepad_studio::run_list::RunList;
-    import makepad_studio::profiler::Profiler;
+    use link::theme::*;
+    use link::widgets::*;
+    use link::shaders::*;
+    use makepad_widgets::designer_theme::*;
+    use makepad_studio::studio_editor::StudioCodeEditor;
+    use makepad_studio::ai_chat::ai_chat_view::AiChatView;
+    use makepad_studio::studio_file_tree::StudioFileTree;
+    use makepad_studio::run_view::RunView;
+    use makepad_studio::log_list::LogList;
+    use makepad_studio::run_list::RunList;
+    use makepad_studio::profiler::Profiler;
 
     ICO_SEARCH = dep("crate://self/resources/icons/Icon_Search.svg")
 
@@ -113,7 +114,7 @@ live_design!{
         }
     }
 
-    AppUI =  <Window> {
+    pub AppUI =  <Window> {
         margin: 5.
         caption_bar = { margin: {left: -100}, visible: true, caption_label = {label = {text: "Makepad"}} 
         preset_1 = <Button>{text:"A"}
@@ -443,6 +444,7 @@ live_design!{
             }
             
             EditFirst = <RectView> {
+                draw_bg: {color: (THEME_COLOR_BG_CONTAINER)}
                 <View> {
                     width: Fill, height: Fill,
                     align: { x: 0., y: 0. }
@@ -462,6 +464,7 @@ live_design!{
                 }
             }
             OutlineFirst = <RectView> {
+                draw_bg: {color: (THEME_COLOR_BG_CONTAINER)}
                 <View> {
                     width: Fill, height: Fill,
                     align: { x: 0.5, y: 0.5 }
@@ -475,6 +478,7 @@ live_design!{
                 }
             }
             DesignFirst = <RectView> {
+                draw_bg: {color: (THEME_COLOR_BG_CONTAINER)}
                 <View> {
                     width: Fill, height: Fill
                     flow: Down
@@ -487,6 +491,7 @@ live_design!{
                 }
             }
             AiFirst = <RectView> {
+                draw_bg: {color: (THEME_COLOR_BG_CONTAINER)}
                 <View> {
                     width: Fill, height: Fill
                     flow: Down
@@ -499,6 +504,7 @@ live_design!{
                 }
             }
             RunFirst = <RectView> {
+                draw_bg: {color: (THEME_COLOR_BG_CONTAINER)}
                 <View> {
                     width: Fill, height: Fill,
                     flow: Down
@@ -529,7 +535,8 @@ live_design!{
                 <RunList> {}
             }
             Search = <RectView> {
-            flow: Down,
+                draw_bg: {color: (THEME_COLOR_BG_CONTAINER)}
+                flow: Down,
                 <DockToolbar> {
                     content = {
                         spacing: (THEME_SPACE_2)
@@ -593,17 +600,17 @@ live_design!{
                             flow: Right,
                             spacing: 0.,
                             <ButtonFlat> {
-                                width: 32.
+                                width: 25.
                                 text: ""
-                                icon_walk: { width: 14. }
+                                icon_walk: { width: 12. }
                                 draw_icon: {
                                     svg_file: dep("crate://self/resources/icons/icon_filetree_folder_create.svg"),
                                 }
                             }
                             <ButtonFlat> {
-                                width: 32.
+                                width: 25.
                                 text: ""
-                                icon_walk: { width: 11. }
+                                icon_walk: { width: 9.5 }
                                 draw_icon: {
                                     svg_file: dep("crate://self/resources/icons/icon_filetree_file_create.svg"),
                                 }

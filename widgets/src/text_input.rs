@@ -8,8 +8,183 @@ use {
 };
 
 live_design!{
+    link widgets;
+    use link::theme::*;
+    use makepad_draw::shader::std::*;
+    
     DrawLabel = {{DrawLabel}} {}
-    TextInputBase = {{TextInput}} {}
+    
+    pub TextInputBase = {{TextInput}} {}
+    
+    pub TextInput = <TextInputBase> {
+        width: 200, height: Fit,
+        padding: <THEME_MSPACE_2> {}
+        
+        label_align: {y: 0.}
+        clip_x: false,
+        clip_y: false,
+        
+        cursor_width: 2.0,
+        
+        is_read_only: false,
+        is_numeric_only: false,
+        empty_message: "0",
+        
+        animator: {
+            hover = {
+                default: off
+                off = {
+                    from: {all: Forward {duration: 0.1}}
+                    apply: {
+                        draw_text: {hover: 0.0},
+                        draw_selection: {hover: 0.0}
+                    }
+                }
+                on = {
+                    from: {all: Snap}
+                    apply: {
+                        draw_text: {hover: 1.0},
+                        draw_selection: {hover: 1.0}
+                    }
+                }
+            }
+            focus = {
+                default: off
+                off = {
+                    from: {all: Forward {duration: .25}}
+                    apply: {
+                        draw_bg: {focus: 0.0},
+                        draw_text: {focus: 0.0},
+                        draw_cursor: {focus: 0.0},
+                        draw_selection: {focus: 0.0}
+                    }
+                }
+                on = {
+                    from: {all: Snap}
+                    apply: {
+                        draw_bg: {focus: 1.0},
+                        draw_text: {focus: 1.0}
+                        draw_cursor: {focus: 1.0},
+                        draw_selection: {focus: 1.0}
+                    }
+                }
+            }
+        }
+        
+        draw_bg: {
+            instance radius: (THEME_CORNER_RADIUS)
+            instance hover: 0.0
+            instance focus: 0.0
+            instance bodytop: (THEME_COLOR_INSET_DEFAULT)
+            instance bodybottom: (THEME_COLOR_CTRL_ACTIVE)
+            
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                let grad_top = 5.0;
+                let grad_bot = 1.5;
+                
+                let body = mix(
+                    self.bodytop,
+                    self.bodybottom,
+                    self.focus
+                );
+                
+                let body_transp = (THEME_COLOR_D_HIDDEN)
+                
+                let top_gradient = mix(
+                    body_transp,
+                    THEME_COLOR_BEVEL_SHADOW,
+                    max(0.0, grad_top - sdf.pos.y) / grad_top
+                );
+                
+                let bot_gradient = mix(
+                    (THEME_COLOR_BEVEL_LIGHT),
+                    top_gradient,
+                    clamp((self.rect_size.y - grad_bot - sdf.pos.y - 1.0) / grad_bot, 0.0, 1.0)
+                );
+                
+                sdf.box(
+                    1.,
+                    1.,
+                    self.rect_size.x - 2.0,
+                    self.rect_size.y - 2.0,
+                    self.radius
+                )
+                
+                sdf.fill_keep(body)
+                
+                sdf.stroke(
+                    bot_gradient,
+                    THEME_BEVELING * 0.9
+                )
+                
+                return sdf.result
+            }
+        }
+        
+        draw_text: {
+            instance hover: 0.0
+            instance focus: 0.0
+            wrap: Word,
+            text_style: <THEME_FONT_REGULAR> {
+                line_spacing: (THEME_FONT_LINE_SPACING),
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            fn get_color(self) -> vec4 {
+                return
+                mix(
+                    mix(
+                        mix(THEME_COLOR_TEXT_DEFAULT, THEME_COLOR_TEXT_HOVER, self.hover),
+                        THEME_COLOR_TEXT_FOCUSED,
+                        self.focus
+                    ),
+                    mix(THEME_COLOR_TEXT_PLACEHOLDER, THEME_COLOR_TEXT_DEFAULT, self.hover),
+                    self.is_empty
+                )
+            }
+        }
+        
+        draw_cursor: {
+            instance focus: 0.0
+            uniform border_radius: 0.5
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                sdf.box(
+                    0.,
+                    0.,
+                    self.rect_size.x,
+                    self.rect_size.y,
+                    self.border_radius
+                )
+                sdf.fill(mix(THEME_COLOR_U_HIDDEN, THEME_COLOR_TEXT_CURSOR, self.focus));
+                return sdf.result
+            }
+        }
+        
+        draw_selection: {
+            instance hover: 0.0
+            instance focus: 0.0
+            uniform border_radius: (THEME_TEXTSELECTION_CORNER_RADIUS)
+            fn pixel(self) -> vec4 {
+                //return mix(#f00,#0f0,self.pos.y)
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                sdf.box(
+                    0.,
+                    0.,
+                    self.rect_size.x,
+                    self.rect_size.y,
+                    self.border_radius
+                )
+                sdf.fill(
+                    mix(THEME_COLOR_U_HIDDEN,
+                        THEME_COLOR_BG_HIGHLIGHT_INLINE,
+                        self.focus)
+                    ); // Pad color
+                    return sdf.result
+                }
+            }
+        }
+    
 }
 
 #[derive(Live, LiveHook, LiveRegister)]
@@ -48,6 +223,10 @@ impl TextInput {
         cx.set_key_focus(self.draw_bg.area());
     }
 
+    pub fn get_cursor(&self) -> &Cursor {
+        &self.cursor
+    }
+
     pub fn set_cursor(&mut self, cursor: Cursor) {
         self.cursor = cursor;
     }
@@ -65,11 +244,19 @@ impl TextInput {
         });
     }
 
-    pub fn filter_input(&mut self, input: String) -> String {
+    pub fn filter_input(&mut self, input: String, is_replace: bool) -> String {
         if self.is_numeric_only {
+            let mut dot = if is_replace {
+                false
+            } else {
+                let before = &self.text.split_at(self.cursor.start().index).0;
+                let after = &self.text.split_at(self.cursor.end().index).1;
+                before.contains('.') || after.contains('.')
+            };
+
             input.chars().filter_map(|char| {
                 match char {
-                    '.' | ',' => Some('.'),
+                    '.' | ',' if !dot => { dot = true; Some('.') },
                     char if char.is_ascii_digit() => Some(char),
                     _ => None,
                 }
@@ -447,26 +634,18 @@ impl Widget for TextInput {
             },
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::KeyZ,
-                modifiers: KeyModifiers {
-                    logo: true,
-                    shift: false,
-                    ..
-                },
+                modifiers,
                 ..
-            }) if !self.is_read_only => {
+            }) if modifiers.is_primary() && !modifiers.shift && !self.is_read_only => {
                 self.undo();
                 self.draw_bg.redraw(cx);
                 cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::KeyZ,
-                modifiers: KeyModifiers {
-                    logo: true,
-                    shift: true,
-                    ..
-                },
+                modifiers,
                 ..
-            }) if !self.is_read_only => {
+            }) if modifiers.is_primary() && modifiers.shift && !self.is_read_only => {
                 self.redo();
                 self.draw_bg.redraw(cx);
                 cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
@@ -479,9 +658,8 @@ impl Widget for TextInput {
                 input,
                 replace_last,
                 was_paste,
-                ..
             }) if !self.is_read_only => {
-                let input = self.filter_input(input);
+                let input = self.filter_input(input, false);
                 if !input.is_empty() {
                     let mut start = self.cursor.start().index;
                     let end = self.cursor.end().index;
@@ -533,6 +711,7 @@ impl Widget for TextInput {
             Hit::FingerDown(FingerDownEvent {
                 abs,
                 tap_count,
+                device,
                 ..
             }) => {
                 let event = DrawEvent::default();
@@ -543,12 +722,14 @@ impl Widget for TextInput {
                     abs - padded_rect.pos
                 );
                 self.move_cursor_to(index_affinity, false);
-                if tap_count == 2 {
-                    self.select_word();
-                } else if tap_count == 3 {
-                    self.select_all();
+                if device.is_primary_hit() {
+                    if tap_count == 2 {
+                        self.select_word();
+                    } else if tap_count == 3 {
+                        self.select_all();
+                    }
+                    self.set_key_focus(&mut *cx);
                 }
-                self.set_key_focus(&mut *cx);
                 self.draw_bg.redraw(&mut *cx);
             }
             Hit::FingerMove(FingerMoveEvent {
@@ -585,12 +766,16 @@ impl Widget for TextInput {
         // Draw text
         if self.text.is_empty() {
             self.draw_text.is_empty = 1.0;
+            // Always draw non-secret text when displaying an empty message.
+            let was_secret = self.draw_text.text_style.is_secret;
+            self.draw_text.text_style.is_secret = false;
             self.draw_text.draw_walk(
                 cx,
                 inner_walk,
                 self.label_align,
                 &self.empty_message,
             );
+            self.draw_text.text_style.is_secret = was_secret;
         } else {
             self.draw_text.is_empty = 0.0;
             self.draw_text.draw_walk(
@@ -647,14 +832,15 @@ impl Widget for TextInput {
         self.text.to_string()
     }
     
-    fn set_text(&mut self, text: &str) {
+    fn set_text(&mut self, cx:&mut Cx, text: &str) {
         if self.text == text {
             return;
         }
-        self.text = self.filter_input(text.to_string());
+        self.text = self.filter_input(text.to_string(), true);
         self.cursor.head.index = self.cursor.head.index.min(text.len());
         self.cursor.tail.index = self.cursor.tail.index.min(text.len());
         self.history.clear();
+        self.redraw(cx);
     }
 }
 

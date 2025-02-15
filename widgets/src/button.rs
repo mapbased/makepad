@@ -1,6 +1,293 @@
 use crate::{makepad_derive_widget::*, makepad_draw::*, widget::*,};
+
 live_design! {
-    ButtonBase = {{Button}} {}
+    link widgets;
+    use link::theme::*;
+    use link::shaders::*;
+    
+    pub ButtonBase = {{Button}} {}
+    pub Button = <ButtonBase> {
+        // TODO: NEEDS FOCUS STATE
+        
+        width: Fit, height: Fit,
+        spacing: 7.5,
+        align: {x: 0.5, y: 0.5},
+        padding: <THEME_MSPACE_2> {}
+        label_walk: { width: Fit, height: Fit },
+        
+        draw_text: {
+            instance hover: 0.0,
+            instance pressed: 0.0,
+            color: (THEME_COLOR_TEXT_DEFAULT)
+            text_style: <THEME_FONT_REGULAR> {
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            fn get_color(self) -> vec4 {
+                return self.color
+            }
+        }
+        
+        icon_walk: {
+            width: (THEME_DATA_ICON_WIDTH), height: Fit,
+        }
+        
+        draw_icon: {
+            instance hover: 0.0
+            instance pressed: 0.0
+            uniform color: (THEME_COLOR_TEXT_DEFAULT)
+            fn get_color(self) -> vec4 {
+                return mix(
+                    mix(
+                        self.color,
+                        mix(self.color, #f, 0.5),
+                        self.hover
+                    ),
+                    self.color * 0.75,
+                    self.pressed
+                )
+            }
+        }
+        
+        draw_bg: {
+            instance hover: 0.0
+            instance pressed: 0.0
+            uniform border_radius: (THEME_CORNER_RADIUS)
+            instance bodytop: (THEME_COLOR_CTRL_DEFAULT)
+            instance bodybottom: (THEME_COLOR_CTRL_HOVER)
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                let grad_top = 5.0;
+                let grad_bot = 2.0;
+                let body = mix(mix(self.bodytop, self.bodybottom, self.hover), THEME_COLOR_CTRL_PRESSED, self.pressed);
+                
+                let body_transp = vec4(body.xyz, 0.0);
+                let top_gradient = mix(
+                    body_transp,
+                    mix(THEME_COLOR_BEVEL_LIGHT, THEME_COLOR_BEVEL_SHADOW, self.pressed),
+                    max(0.0, grad_top - sdf.pos.y) / grad_top
+                );
+                let bot_gradient = mix(
+                    mix(THEME_COLOR_BEVEL_SHADOW, THEME_COLOR_BEVEL_LIGHT, self.pressed),
+                    top_gradient,
+                    clamp((self.rect_size.y - grad_bot - sdf.pos.y - 1.0) / grad_bot, 0.0, 1.0)
+                );
+                
+                sdf.box(
+                    1.,
+                    1.,
+                    self.rect_size.x - 2.0,
+                    self.rect_size.y - 2.0,
+                    self.border_radius
+                )
+                sdf.fill_keep(body)
+                
+                sdf.stroke(
+                    bot_gradient,
+                    THEME_BEVELING
+                )
+                
+                return sdf.result
+            }
+        }
+        
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: 0.1}}
+                    apply: {
+                        draw_bg: {pressed: 0.0, hover: 0.0}
+                        draw_icon: {pressed: 0.0, hover: 0.0}
+                        draw_text: {pressed: 0.0, hover: 0.0}
+                    }
+                }
+                
+                on = {
+                    from: {
+                        all: Forward {duration: 0.1}
+                        pressed: Forward {duration: 0.01}
+                    }
+                    apply: {
+                        draw_bg: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_icon: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                    }
+                }
+                
+                pressed = {
+                    from: {all: Forward {duration: 0.2}}
+                    apply: {
+                        draw_bg: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_icon: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                    }
+                }
+            }
+        }
+    }
+    
+    pub ButtonIcon = <Button> {
+        icon_walk: {
+            width: 12.
+            margin: { left: 0. }
+        }
+    }
+    
+    pub ButtonFlat = <ButtonIcon> {
+        height: Fit, width: Fit,
+        padding: <THEME_MSPACE_2> {}
+        margin: 0.
+        align: { x: 0.5, y: 0.5 }
+        icon_walk: { width: 12. }
+        draw_bg: {
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size)
+                sdf.fill(#f00)
+                return sdf.result
+            }
+        }
+        
+        draw_text: {
+            instance hover: 0.0,
+            instance pressed: 0.0,
+            text_style: <THEME_FONT_REGULAR> {
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            fn get_color(self) -> vec4 {
+                return mix(
+                    mix(
+                        THEME_COLOR_TEXT_DEFAULT,
+                        THEME_COLOR_TEXT_HOVER,
+                        self.hover
+                    ),
+                    THEME_COLOR_TEXT_PRESSED,
+                    self.pressed
+                )
+            }
+        }
+        
+        draw_bg: {
+            instance hover: 0.0
+            instance pressed: 0.0
+            uniform border_radius: (THEME_CORNER_RADIUS)
+            instance bodytop: (THEME_COLOR_U_HIDDEN)
+            instance bodybottom: (THEME_COLOR_CTRL_HOVER)
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                let grad_top = 5.0;
+                let grad_bot = 2.0;
+                let body = mix(mix(self.bodytop, self.bodybottom, self.hover), THEME_COLOR_CTRL_PRESSED, self.pressed);
+                
+                let body_transp = vec4(body.xyz, 0.0);
+                let top_gradient = mix(
+                    body_transp,
+                    mix(THEME_COLOR_U_HIDDEN, THEME_COLOR_BEVEL_SHADOW, self.pressed),
+                    max(0.0, grad_top - sdf.pos.y) / grad_top
+                );
+                let bot_gradient = mix(
+                    mix(THEME_COLOR_U_HIDDEN, THEME_COLOR_BEVEL_LIGHT, self.pressed),
+                    top_gradient,
+                    clamp((self.rect_size.y - grad_bot - sdf.pos.y - 1.0) / grad_bot, 0.0, 1.0)
+                );
+                
+                sdf.box(
+                    1.,
+                    1.,
+                    self.rect_size.x - 2.0,
+                    self.rect_size.y - 2.0,
+                    self.border_radius
+                )
+                sdf.fill_keep(body)
+                
+                sdf.stroke(
+                    bot_gradient,
+                    THEME_BEVELING
+                )
+                
+                return sdf.result
+            }
+        }
+        
+    }
+    
+    pub ButtonFlatter = <ButtonIcon> {
+        height: Fit, width: Fit,
+        padding: <THEME_MSPACE_2> {},
+        margin: <THEME_MSPACE_2> {},
+        align: { x: 0.5, y: 0.5 },
+        icon_walk: { width: 12. },
+        draw_bg: {
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size)
+                sdf.fill(#f00)
+                return sdf.result
+            }
+        }
+        
+        draw_text: {
+            instance hover: 0.0,
+            instance pressed: 0.0,
+            text_style: <THEME_FONT_REGULAR> {
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            fn get_color(self) -> vec4 {
+                return mix(
+                    mix(
+                        THEME_COLOR_TEXT_DEFAULT,
+                        THEME_COLOR_TEXT_HOVER,
+                        self.hover
+                    ),
+                    THEME_COLOR_TEXT_PRESSED,
+                    self.pressed
+                )
+            }
+        }
+        
+        draw_bg: {
+            instance hover: 0.0
+            instance pressed: 0.0
+            uniform border_radius: (THEME_CORNER_RADIUS)
+            instance bodytop: (THEME_COLOR_U_HIDDEN)
+            instance bodybottom: (THEME_COLOR_U_HIDDEN)
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                let grad_top = 5.0;
+                let grad_bot = 2.0;
+                let body = mix(mix(self.bodytop, self.bodybottom, self.hover), THEME_COLOR_D_HIDDEN, self.pressed);
+                
+                let body_transp = vec4(body.xyz, 0.0);
+                let top_gradient = mix(
+                    body_transp,
+                    mix(THEME_COLOR_U_HIDDEN, THEME_COLOR_D_HIDDEN, self.pressed),
+                    max(0.0, grad_top - sdf.pos.y) / grad_top
+                );
+                let bot_gradient = mix(
+                    mix(THEME_COLOR_U_HIDDEN, THEME_COLOR_D_HIDDEN, self.pressed),
+                    top_gradient,
+                    clamp((self.rect_size.y - grad_bot - sdf.pos.y - 1.0) / grad_bot, 0.0, 1.0)
+                );
+                
+                sdf.box(
+                    1.,
+                    1.,
+                    self.rect_size.x - 2.0,
+                    self.rect_size.y - 2.0,
+                    self.border_radius
+                )
+                sdf.fill_keep(body)
+                
+                sdf.stroke(
+                    bot_gradient,
+                    THEME_BEVELING
+                )
+                
+                return sdf.result
+            }
+        }
+        
+    }
+    
+    
 }
 
 /// Actions emitted by a button widget, including the key modifiers
@@ -86,7 +373,7 @@ impl Widget for Button {
             // If it's not enabled, we still show the button, but we set
             // the NotAllowed mouse cursor upon hover instead of the Hand cursor.
             match event.hits(cx, self.draw_bg.area()) {
-                Hit::FingerDown(fe) if self.enabled => {
+                Hit::FingerDown(fe) if self.enabled && fe.is_primary_hit() => {
                     if self.grab_key_focus {
                         cx.set_key_focus(self.draw_bg.area());
                     }
@@ -104,13 +391,12 @@ impl Widget for Button {
                 Hit::FingerHoverOut(_) if self.enabled => {
                     self.animator_play(cx, id!(hover.off));
                 }
-                Hit::FingerUp(fe) if self.enabled => {
+                Hit::FingerUp(fe) if self.enabled && fe.is_primary_hit() => {
                     if fe.is_over {
                         cx.widget_action_with_data(&self.action_data, uid, &scope.path, ButtonAction::Clicked(fe.modifiers));
                         if self.reset_hover_on_click {
                             self.animator_cut(cx, id!(hover.off));
-                        } else if fe.device.has_hovers() {
-                            self.animator_play(cx, id!(hover.on));
+                        } else if fe.has_hovers() {
                             self.animator_play(cx, id!(hover.on));
                         } else {
                             self.animator_play(cx, id!(hover.off));
@@ -142,8 +428,9 @@ impl Widget for Button {
         self.text.as_ref().to_string()
     }
 
-    fn set_text(&mut self, v: &str) {
+    fn set_text(&mut self, cx:&mut Cx, v: &str) {
         self.text.as_mut_empty().push_str(v);
+        self.redraw(cx);
     }
 }
 
@@ -216,17 +503,17 @@ impl Button {
 impl ButtonRef {
     /// See [`Button::clicked()`].
     pub fn clicked(&self, actions: &Actions) -> bool {
-        self.borrow().map_or(false, |inner| inner.clicked(actions))
+        self.borrow().is_some_and(|inner| inner.clicked(actions))
     }
 
     /// See [`Button::pressed()`].
     pub fn pressed(&self, actions: &Actions) -> bool {
-        self.borrow().map_or(false, |inner| inner.pressed(actions))
+        self.borrow().is_some_and(|inner| inner.pressed(actions))
     }
 
     /// See [`Button::released()`].
     pub fn released(&self, actions: &Actions) -> bool {
-        self.borrow().map_or(false, |inner| inner.released(actions))
+        self.borrow().is_some_and(|inner| inner.released(actions))
     }
 
     /// See [`Button::clicked_modifiers()`].
@@ -244,21 +531,24 @@ impl ButtonRef {
         self.borrow().and_then(|inner| inner.released_modifiers(actions))
     }
 
-    pub fn set_visible(&self, visible: bool) {
+    pub fn set_visible(&self, cx: &mut Cx, visible: bool) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.visible = visible;
+            inner.redraw(cx);
         }
     }
 
-    pub fn set_enabled(&self, enabled: bool) {
+    pub fn set_enabled(&self, cx: &mut Cx, enabled: bool) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.enabled = enabled;
+            inner.redraw(cx);
         }
     }
 
-    /// Resets the hover state of this button. This is useful in certain cases the
-    /// hover state should be reseted in a specific way that is not the default behavior
-    /// which is based on the mouse cursor position and movement.
+    /// Resets the hover state of this button.
+    ///
+    /// This is useful in certain cases where the hover state should be reset 
+    /// (cleared) regardelss of whether the mouse is over it.
     pub fn reset_hover(&self, cx: &mut Cx) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.animator_cut(cx, id!(hover.off));
@@ -292,14 +582,14 @@ impl ButtonSet {
         None
     }
 
-    pub fn set_visible(&self, visible: bool) {
+    pub fn set_visible(&self, cx:&mut Cx, visible: bool) {
         for item in self.iter() {
-            item.set_visible(visible)
+            item.set_visible(cx, visible)
         }
     }
-    pub fn set_enabled(&self, enabled: bool) {
+    pub fn set_enabled(&self, cx:&mut Cx, enabled: bool) {
         for item in self.iter() {
-            item.set_enabled(enabled)
+            item.set_enabled(cx, enabled)
         }
     }
 }

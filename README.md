@@ -41,16 +41,13 @@ Our native builds work on the stable Rust toolchain. However, some of the errors
 
 For the non standard build targets (apple ios, apple tvos, android, wasm) we have a buildtool called 'cargo-makepad' that you need to install.
 
-Install it from a local clone of the [repo](https://github.com/makepad/makepad):
+Install it from the repo:
 
 ```cargo install --path=./tools/cargo_makepad```
 
-Or install it from crates.io (the last published version, it may be older than the repo):
+Or install it from cargo (might be behind the repo)
 
 ```cargo install cargo-makepad```
-
-The way how you've installed `cargo-makepad` will affect how you will install Makepad studio, if you
-choose to use it (more later).
 
 Now this tool can be used to install toolchains per platform needed
 
@@ -67,15 +64,9 @@ Now this tool can be used to install toolchains per platform needed
 
 Makepad studio allows you to easily build and view the examples, and it uses cargo-makepad internally so be sure to install cargo-makepad as shown above.
 
-If you've installed `cargo-makepad` from a local clone of the repo, then either
-- build & run Makepad studio from the local clone:
-  
-  ```cargo run -p makepad-studio --release```
-- or install `makepad-studio` from the local clone:
-  
-  ```cargo install --path=./studio```
+```cargo run -p makepad-studio --release```
 
-Or install it from crates.io (the last published version, it may be older than the repo)::
+Or install it from cargo (might be behind the repo)
 
 ```cargo install makepad-studio```
 
@@ -170,6 +161,19 @@ cargo run -p makepad-example-simple
 ```
 
 And there should be a desktop application window now running (may need to click on the icon on MacOS's Dock to show it)
+
+### Building for the Linux direct target
+
+To build and run for the Linux direct target (which bypasses X11), first install the following dependencies:
+```shell
+sudo apt-get install libinput-dev libgbm-dev libdrm-dev
+```
+
+and then run the same cargo command with the `MAKEPAD` environment variable set:
+```shell
+MAKEPAD=linux_direct cargo run -p makepad-example-simple
+```
+
 
 ## 4. Android Build
 
@@ -285,39 +289,44 @@ cargo makepad wasm install-toolchain
 cargo makepad wasm run -p makepad-example-simple --release
 ```
 
-### Cross-origin headers for WASM for browsers
+### If you need `wasm-bindgen` compatibility
 
-For WASM to work in browsers, your web server must
+By default, Makepad uses it's own bridge. Web crates outside of Makepad
+usually depend on `wasm-bindgen` for web integration so they will fail
+at runtime if added to your project.
 
-- serve the MIME types correctly (as is common), and
-- set the following two headers.
-  ```
-  Cross-Origin-Embedder-Policy: require-corp
-  Cross-Origin-Opener-Policy: same-origin
-  ```
-  This is NOT common on public web servers like GitHub Pages. And it can't be set with `<meta
-  http-equiv="..." content="..."></meta>` in `index.html`.
-  
-  A workaround - but possibly for non-private browser mode only: use
-  [gzuidhof/coi-serviceworker](https://github.com/gzuidhof/coi-serviceworker):
-  
-  1. Let's say that you use Makepad's `experiments/html_experiment`. Build it with `cargo makepad
-     wasm build -p makepad-experiment-html`.
-  2. Copy
-     [coi-serviceworker.min.js](https://github.com/gzuidhof/coi-serviceworker/blob/master/coi-serviceworker.min.js)
-     (or
-     [coi-serviceworker.js](https://github.com/gzuidhof/coi-serviceworker/blob/master/coi-serviceworker.js))
-     to `target/makepad-wasm-app/debug/makepad-experiment-html`.
-  3. Edit `target/makepad-wasm-app/debug/makepad-experiment-html/index.html` and under `<head>` add:
-     `<script src="coi-serviceworker.min.js"></script>` (or `<script
-     src="coi-serviceworker.js"></script>`).
-  4. If use build a release with `cargo makepad wasm build -p makepad-experiment-html --release`,
-     then the build directory is `makepad/target/makepad-wasm-app/release/makepad-experiment-html`
-     instead.
-  5. If there is any initiation, it will be run twice. To control that, follow
-     [gzuidhof/coi-serviceworker#14](https://github.com/gzuidhof/coi-serviceworker/issues/14).
-  6. If this works well, incorporate it to Makepad's `tools/cargo_makepad/src/wasm/compile.rs` and
-     `platform/src/os/web/` and create a pull request.
+However, we can build with opt-in `wasm-bindgen` support to solve this
+issue.
+
+To enable wasm-bindgen integration you should build like this:
+
+1. Ensure wasm-bindgen CLI is installed.
+
+```bash
+cargo install -f wasm-bindgen-cli
+```
+
+2. Add `wasm-bindgen` dependency to your `Cargo.toml` file.
+
+```bash
+cargo add wasm-bindgen
+```
+
+3. Ensure you are using the crate somewhere like in `main.rs`.
+
+```rust
+use wasm_bindgen::prelude::*;
+```
+
+> **Note:** If you forget this, you may see a compile error like `failed to find __wbindgen_malloc`.
+
+4. Now, run with the `--bindgen` option.
+
+```bash
+cargo makepad wasm --bindgen run -p makepad-example-hello-widgets --release
+```
+
+
 ---
 
 ## Makepad Commands Quick Reference
@@ -343,7 +352,7 @@ cargo makepad wasm install-toolchain
 
 ### Android
 
-Command for installing the app onto an iOS Simulator.
+Command for installing the app onto an Android Simulator.
 
 ```bash
 cargo makepad android run -p makepad-example-simple --release

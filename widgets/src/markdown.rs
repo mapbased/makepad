@@ -9,7 +9,11 @@ use crate::{
 };
 
 live_design!{
-    MarkdownLinkBase = {{MarkdownLink}} {
+    link widgets;
+    use link::theme::*;
+    use makepad_draw::shader::std::*;
+
+    pub MarkdownLinkBase = {{MarkdownLink}} {
         link = {
             draw_text:{
                 // other blue hyperlink colors: #1a0dab, // #0969da  // #0c50d1
@@ -18,10 +22,273 @@ live_design!{
         }
     }
 
-    MarkdownBase = {{Markdown}} {
+    pub MarkdownBase = {{Markdown}} {
         // ok so we can use one drawtext
         // change to italic, change bold (SDF), strikethrough
     }
+    
+    pub MarkdownLink = <MarkdownLinkBase> {
+        width: Fit, height: Fit,
+        align: {x: 0., y: 0.}
+        
+        label_walk: { width: Fit, height: Fit }
+        
+        draw_icon: {
+            instance hover: 0.0
+            instance pressed: 0.0
+            fn get_color(self) -> vec4 {
+                return mix(
+                    mix(
+                        THEME_COLOR_TEXT_DEFAULT,
+                        THEME_COLOR_TEXT_HOVER,
+                        self.hover
+                    ),
+                    THEME_COLOR_TEXT_PRESSED,
+                    self.pressed
+                )
+            }
+        }
+        
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: 0.1}}
+                    apply: {
+                        draw_bg: {pressed: 0.0, hover: 0.0}
+                        draw_icon: {pressed: 0.0, hover: 0.0}
+                        draw_text: {pressed: 0.0, hover: 0.0}
+                    }
+                }
+                
+                on = {
+                    from: {
+                        all: Forward {duration: 0.1}
+                        pressed: Forward {duration: 0.01}
+                    }
+                    apply: {
+                        draw_bg: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_icon: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                    }
+                }
+                
+                pressed = {
+                    from: {all: Forward {duration: 0.2}}
+                    apply: {
+                        draw_bg: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_icon: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                    }
+                }
+            }
+        }
+        
+        draw_bg: {
+            instance pressed: 0.0
+            instance hover: 0.0
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                let offset_y = 1.0
+                sdf.move_to(0., self.rect_size.y - offset_y);
+                sdf.line_to(self.rect_size.x, self.rect_size.y - offset_y);
+                return sdf.stroke(mix(
+                    THEME_COLOR_TEXT_DEFAULT,
+                    THEME_COLOR_TEXT_PRESSED,
+                    self.pressed
+                ), mix(0.0, 0.8, self.hover));
+            }
+        }
+        
+        draw_text: {
+            wrap: Word
+            color: (THEME_COLOR_TEXT_DEFAULT),
+            instance color_hover: (THEME_COLOR_TEXT_HOVER),
+            instance color_pressed: (THEME_COLOR_TEXT_PRESSED),
+            instance pressed: 0.0
+            instance hover: 0.0
+            text_style: <THEME_FONT_REGULAR>{
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            fn get_color(self) -> vec4 {
+                return mix(
+                    mix(
+                        self.color,
+                        self.color_hover,
+                        self.hover
+                    ),
+                    self.color_pressed,
+                    self.pressed
+                )
+            }
+        }
+    }
+    
+    pub Markdown = <MarkdownBase> {
+        width:Fill, height:Fit,
+        flow: RightWrap,
+        padding: <THEME_MSPACE_1> {}
+                
+        font_size: (THEME_FONT_SIZE_P),
+        font_color: (THEME_COLOR_TEXT_DEFAULT),
+        
+        paragraph_spacing: 16,
+        pre_code_spacing: 8,
+        inline_code_padding: <THEME_MSPACE_1> {},
+        inline_code_margin: <THEME_MSPACE_1> {},
+                
+        draw_normal: {
+            text_style: <THEME_FONT_REGULAR> {
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            color: (THEME_COLOR_TEXT_DEFAULT)
+        }
+        
+        draw_italic: {
+            text_style: <THEME_FONT_ITALIC> {
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            color: (THEME_COLOR_TEXT_DEFAULT)
+        }
+        
+        draw_bold: {
+            text_style: <THEME_FONT_BOLD> {
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            color: (THEME_COLOR_TEXT_DEFAULT)
+        }
+        
+        draw_bold_italic: {
+            text_style: <THEME_FONT_BOLD_ITALIC> {
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            color: (THEME_COLOR_TEXT_DEFAULT)
+        }
+        
+        draw_fixed: {
+            text_style: <THEME_FONT_CODE> {
+                font_size: (THEME_FONT_SIZE_P)
+            }
+            color: (THEME_COLOR_TEXT_DEFAULT)
+        }
+        
+        code_layout: {
+            flow: RightWrap,
+            padding: <THEME_MSPACE_2> { left: (THEME_SPACE_3), right: (THEME_SPACE_3) }
+        }
+        code_walk: { width: Fill, height: Fit }
+        
+        quote_layout: {
+            flow: RightWrap,
+            padding: <THEME_MSPACE_2> { left: (THEME_SPACE_3), right: (THEME_SPACE_3) }
+        }
+        quote_walk: { width: Fill, height: Fit, }
+        
+        list_item_layout: {
+            flow: RightWrap,
+            padding: <THEME_MSPACE_1> {}
+        }
+        list_item_walk: {
+            height: Fit, width: Fill,
+        }
+        
+        sep_walk: {
+            width: Fill, height: 4.
+            margin: <THEME_MSPACE_V_1> {}
+        }
+        
+        draw_block: {
+            line_color: (THEME_COLOR_TEXT_DEFAULT)
+            sep_color: (THEME_COLOR_DIVIDER)
+            quote_bg_color: (THEME_COLOR_BG_HIGHLIGHT)
+            quote_fg_color: (THEME_COLOR_TEXT_DEFAULT)
+            code_color: (THEME_COLOR_BG_HIGHLIGHT)
+            
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                match self.block_type {
+                    FlowBlockType::Quote => {
+                        sdf.box(
+                            0.,
+                            0.,
+                            self.rect_size.x,
+                            self.rect_size.y,
+                            2.
+                        );
+                        sdf.fill(self.quote_bg_color)
+                        sdf.box(
+                            THEME_SPACE_1,
+                            THEME_SPACE_1,
+                            THEME_SPACE_1,
+                            self.rect_size.y - THEME_SPACE_2,
+                            1.5
+                        );
+                        sdf.fill(self.quote_fg_color)
+                        return sdf.result;
+                    }
+                    FlowBlockType::Sep => {
+                        sdf.box(
+                            0.,
+                            1.,
+                            self.rect_size.x-1,
+                            self.rect_size.y-2.,
+                            2.
+                        );
+                        sdf.fill(self.sep_color);
+                        return sdf.result;
+                    }
+                    FlowBlockType::Code => {
+                        sdf.box(
+                            0.,
+                            0.,
+                            self.rect_size.x,
+                            self.rect_size.y,
+                            2.
+                        );
+                        sdf.fill(self.code_color);
+                        return sdf.result;
+                    }
+                    FlowBlockType::InlineCode => {
+                        sdf.box(
+                            1.,
+                            1.,
+                            self.rect_size.x,
+                            self.rect_size.y - 2.,
+                            2.
+                        );
+                        sdf.fill(self.code_color);
+                        return sdf.result;
+                    }
+                    FlowBlockType::Underline => {
+                        sdf.box(
+                            0.,
+                            self.rect_size.y-2,
+                            self.rect_size.x,
+                            2.0,
+                            0.5
+                        );
+                        sdf.fill(self.line_color);
+                        return sdf.result;
+                    }
+                    FlowBlockType::Strikethrough => {
+                        sdf.box(
+                            0.,
+                            self.rect_size.y * 0.45,
+                            self.rect_size.x,
+                            2.0,
+                            0.5
+                        );
+                        sdf.fill(self.line_color);
+                        return sdf.result;
+                    }
+                }
+                return #f00
+            }
+        }
+        
+        link = <MarkdownLink> {}
+    }
+    
 } 
 
 #[derive(Live, Widget)]
@@ -64,10 +331,11 @@ impl Widget for Markdown {
         self.body.as_ref().to_string()
     } 
     
-    fn set_text(&mut self, v:&str){
+    fn set_text(&mut self, cx:&mut Cx, v:&str){
         if self.body.as_ref() != v{
             self.body.set(v);
             self.parse_text();
+            self.redraw(cx);
         }
     }
 }
@@ -136,7 +404,7 @@ impl Markdown {
                 MarkdownNode::Link{start, url_start, end}=>{
                     self.auto_id += 1;
                     let item = tf.item(cx, LiveId(self.auto_id), live_id!(link));
-                    item.set_text(&doc.decoded[*start..*url_start]);
+                    item.set_text(cx, &doc.decoded[*start..*url_start]);
                     item.as_markdown_link()
                     .set_href(&doc.decoded[*url_start..*end]);
                     item.draw_all_unscoped(cx);
@@ -199,7 +467,7 @@ impl Markdown {
                         let entry_id = tf.new_counted_id();
                         let cbs = &self.code_block_string;
                         tf.item_with(cx, entry_id, live_id!(code_block), |cx, item, _tf|{
-                            item.widget(id!(code_view)).set_text(cbs);
+                            item.widget(id!(code_view)).set_text(cx, cbs);
                             item.draw_all_unscoped(cx);
                         });
                     }
@@ -237,9 +505,9 @@ impl Markdown {
 }
 
 impl MarkdownRef {
-    pub fn set_text(&mut self, v:&str) {
+    pub fn set_text(&mut self, cx:&mut Cx, v:&str) {
         let Some(mut inner) = self.borrow_mut() else { return };
-        inner.set_text(v)
+        inner.set_text(cx, v)
     }
 }
 
@@ -277,13 +545,13 @@ impl Widget for MarkdownLink {
         self.link.text()
     }
 
-    fn set_text(&mut self, v: &str) {
-        self.link.set_text(v);
+    fn set_text(&mut self, cx:&mut Cx, v: &str) {
+        self.link.set_text(cx, v);
     }
 }
 
 impl MarkdownLinkRef {
-    pub fn set_href(&mut self, v: &str) {
+    pub fn set_href(&self, v: &str) {
         let Some(mut inner) = self.borrow_mut() else {
             return;
         };

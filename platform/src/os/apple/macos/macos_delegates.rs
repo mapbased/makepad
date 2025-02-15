@@ -1,35 +1,28 @@
-use crate::apple_util::get_event_mouse_button;
-
 use {
     std::{
         sync::Arc,
         sync::Mutex,
         ffi::CStr,
-        os::raw::{c_void}
+        os::raw::c_void,
     },
     crate::{
         makepad_live_id::LiveId,
-        makepad_math::{
-            DVec2,
-        },
+        makepad_math::DVec2,
         os::{
             apple::apple_sys::*,
             macos::{
                 macos_app::{
                     MacosApp,
-                    get_macos_app_global
+                    with_macos_app,
                 },
-                macos_event::{
-                    MacosEvent
-                },
-                macos_window::{
-                    get_cocoa_window
-                },
+                macos_event::MacosEvent,
+                macos_window::get_cocoa_window,
             },
             apple_classes::get_apple_class_global,
             apple_util::{
                 nsstring_to_string,
                 get_event_key_modifier,
+                get_event_mouse_button,
                 superclass,
                 load_mouse_cursor
             },
@@ -39,7 +32,8 @@ use {
             DragEvent,
             DropEvent,
             DragItem,
-            DragResponse
+            DragResponse,  
+            finger::MouseButton,
         },
     }
 };
@@ -363,40 +357,40 @@ pub fn define_cocoa_view_class() -> *const Class {
             }
         }
         let modifiers = get_event_key_modifier(event);
-        cw.send_mouse_down(0, modifiers);
+        cw.send_mouse_down(MouseButton::PRIMARY, modifiers);
     }
     
     
     extern fn mouse_up(this: &Object, _sel: Sel, event: ObjcId) {
         let cw = get_cocoa_window(this);
         let modifiers = get_event_key_modifier(event);
-        cw.send_mouse_up(0, modifiers);
+        cw.send_mouse_up(MouseButton::PRIMARY, modifiers);
     }
     
     extern fn right_mouse_down(this: &Object, _sel: Sel, event: ObjcId) {
         let cw = get_cocoa_window(this);
         let modifiers = get_event_key_modifier(event);
-        cw.send_mouse_down(1, modifiers);
+        cw.send_mouse_down(MouseButton::SECONDARY, modifiers);
     }
     
     extern fn right_mouse_up(this: &Object, _sel: Sel, event: ObjcId) {
         let cw = get_cocoa_window(this);
         let modifiers = get_event_key_modifier(event);
-        cw.send_mouse_up(1, modifiers);
+        cw.send_mouse_up(MouseButton::SECONDARY, modifiers);
     }
     
     extern fn other_mouse_down(this: &Object, _sel: Sel, event: ObjcId) {
         let cw = get_cocoa_window(this);
         let modifiers = get_event_key_modifier(event);
-        let button = get_event_mouse_button(event);
-        cw.send_mouse_down(button, modifiers);
+        let raw_button = get_event_mouse_button(event);
+        cw.send_mouse_down(MouseButton::from_raw_button(raw_button), modifiers);
     }
     
     extern fn other_mouse_up(this: &Object, _sel: Sel, event: ObjcId) {
         let cw = get_cocoa_window(this);
         let modifiers = get_event_key_modifier(event);
-        let button = get_event_mouse_button(event);
-        cw.send_mouse_up(button, modifiers);
+        let raw_button = get_event_mouse_button(event);
+        cw.send_mouse_up(MouseButton::from_raw_button(raw_button), modifiers);
     }
     
     fn mouse_pos_from_event(view: &Object, event: ObjcId) -> DVec2 {
@@ -454,10 +448,10 @@ pub fn define_cocoa_view_class() -> *const Class {
     
     extern fn reset_cursor_rects(this: &Object, _sel: Sel) {
         unsafe {
-            let current_cursor = get_macos_app_global().current_cursor.clone();
-            let cursor_id = *get_macos_app_global().cursors.entry(current_cursor.clone()).or_insert_with( || {
+            let current_cursor = with_macos_app(|app| app.current_cursor.clone());
+            let cursor_id = with_macos_app(|app| *app.cursors.entry(current_cursor.clone()).or_insert_with( || {
                 load_mouse_cursor(current_cursor.clone())
-            });
+            }));
             let bounds: NSRect = msg_send![this, bounds];
             if let MouseCursor::Hidden = current_cursor{
                 let _: () = msg_send![

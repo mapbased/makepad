@@ -20,7 +20,7 @@ use {
                     macos_event::MacosEvent,
                     macos_app::{
                         MacosApp,
-                        get_macos_app_global,
+                        with_macos_app,
                         init_macos_app_global
                     },
                     macos_window::MacosWindow
@@ -38,6 +38,7 @@ use {
         window::WindowId,
         event::{
             WindowGeom,
+            MouseButton,
             MouseUpEvent,
             Event,
             NetworkResponseChannel
@@ -172,7 +173,7 @@ impl Cx {
         }));
         // lets set our signal poll timer
         // final bit of initflow
-        get_macos_app_global().start_timer(0, 0.008, true);
+        with_macos_app(|app| app.start_timer(0, 0.008, true));
         
         cx.borrow_mut().call_event_handler(&Event::Startup);
         cx.borrow_mut().redraw_all();
@@ -193,7 +194,7 @@ impl Cx {
                         if drawable == nil {
                             return
                         }
-                        self.passes[*pass_id].set_time(get_macos_app_global().time_now() as f32);
+                        self.passes[*pass_id].set_time(with_macos_app(|app| app.time_now() as f32));
                         if metal_window.is_resizing {
                             self.draw_pass(*pass_id, metal_cx, DrawPassMode::Resizing(drawable));
                         }
@@ -204,11 +205,11 @@ impl Cx {
                 }
                 CxPassParent::Pass(_) => {
                     //let dpi_factor = self.get_delegated_dpi_factor(parent_pass_id);
-                    self.passes[*pass_id].set_time(get_macos_app_global().time_now() as f32);
+                    self.passes[*pass_id].set_time(with_macos_app(|app| app.time_now() as f32));
                     self.draw_pass(*pass_id, metal_cx, DrawPassMode::Texture);
                 },
                 CxPassParent::None => {
-                    self.passes[*pass_id].set_time(get_macos_app_global().time_now() as f32);
+                    self.passes[*pass_id].set_time(with_macos_app(|app| app.time_now() as f32));
                     self.draw_pass(*pass_id, metal_cx, DrawPassMode::Texture);
                 }
             }
@@ -233,7 +234,6 @@ impl Cx {
         metal_cx: &mut MetalCx,
         metal_windows: &mut Vec<MetalWindow>
     ) -> EventFlow {
-        
         if let  EventFlow::Exit = self.handle_platform_ops(metal_windows, metal_cx){
             self.call_event_handler(&Event::Shutdown);
             return EventFlow::Exit
@@ -264,7 +264,9 @@ impl Cx {
                         self.handle_media_signals();
                         self.call_event_handler(&Event::Signal);
                     }
-                    self.handle_action_receiver();
+                    if SignalToUI::check_and_clear_action_signal() {
+                        self.handle_action_receiver();
+                    }
                     if self.handle_live_edit() {
                         self.call_event_handler(&Event::LiveEdit);
                         self.redraw_all();
@@ -336,7 +338,7 @@ impl Cx {
             }
             MacosEvent::Paint => {
                 if self.new_next_frames.len() != 0 {
-                    self.call_next_frame_event(get_macos_app_global().time_now());
+                    self.call_next_frame_event(with_macos_app(|app| app.time_now()));
                 }
                 if self.need_redrawing() {
                     self.call_draw_event();
@@ -354,7 +356,7 @@ impl Cx {
                     e.time
                 );
                 self.fingers.mouse_down(e.button, e.window_id);
-                self.call_event_handler(&Event::MouseDown(e.into()))
+                self.call_event_handler(&Event::MouseDown(e.into()));
             }
             MacosEvent::MouseMove(mut e) => {
                 self.dpi_override_scale(&mut e.abs, e.window_id);
@@ -371,7 +373,7 @@ impl Cx {
             }
             MacosEvent::Scroll(mut e) => {
                 self.dpi_override_scale(&mut e.abs, e.window_id);
-                self.call_event_handler(&Event::Scroll(e.into()))
+                self.call_event_handler(&Event::Scroll(e.into()));
             }
             MacosEvent::WindowDragQuery(mut e) => {
                 self.dpi_override_scale(&mut e.abs, e.window_id);
@@ -396,14 +398,14 @@ impl Cx {
                 // TODO! make this more resilient
                 self.call_event_handler(&Event::MouseUp(MouseUpEvent {
                     abs: dvec2(-100000.0, -100000.0),
-                    button: 0,
+                    button: MouseButton::PRIMARY,
                     window_id: CxWindowPool::id_zero(),
                     modifiers: Default::default(),
                     time: 0.0
                 }));
-                self.fingers.mouse_up(0);
+                self.fingers.mouse_up(MouseButton::PRIMARY);
                 self.fingers.cycle_hover_area(live_id!(mouse).into());
-                
+
                 self.call_event_handler(&Event::DragEnd);
                 self.drag_drop.cycle_drag();
             }
@@ -429,7 +431,7 @@ impl Cx {
             }
         }
         
-        if self.any_passes_dirty() || self.need_redrawing()/* || self.new_next_frames.len() != 0 */|| paint_dirty {
+        if self.any_passes_dirty() || self.need_redrawing()/* || self.new_next_frames.len() != 0*/ || paint_dirty {
             EventFlow::Poll
         } else {
             EventFlow::Wait
@@ -471,6 +473,11 @@ impl Cx {
                         metal_window.cocoa_window.minimize();
                     }
                 },
+                CxOsOp::Deminiaturize(window_id) => {
+                    if let Some(metal_window) = metal_windows.iter_mut().find( | w | w.window_id == window_id) {
+                        metal_window.cocoa_window.deminiaturize();
+                    }
+                },
                 CxOsOp::MaximizeWindow(window_id) => {
                     if let Some(metal_window) = metal_windows.iter_mut().find( | w | w.window_id == window_id) {
                         metal_window.cocoa_window.maximize();
@@ -481,6 +488,11 @@ impl Cx {
                         metal_window.cocoa_window.restore();
                     }
                 },
+                CxOsOp::HideWindow(window_id) =>{
+                    if let Some(metal_window) = metal_windows.iter_mut().find( | w | w.window_id == window_id) {
+                        metal_window.cocoa_window.hide();
+                    }
+                }
                 CxOsOp::FullscreenWindow(_window_id) => {
                     todo!()
                 },
@@ -506,13 +518,13 @@ impl Cx {
                     //todo!()
                 },
                 CxOsOp::SetCursor(cursor) => {
-                    get_macos_app_global().set_mouse_cursor(cursor);
+                    with_macos_app(|app| app.set_mouse_cursor(cursor));
                 },
                 CxOsOp::StartTimer {timer_id, interval, repeats} => {
-                    get_macos_app_global().start_timer(timer_id, interval, repeats);
+                    with_macos_app(|app| app.start_timer(timer_id, interval, repeats));
                 },
                 CxOsOp::StopTimer(timer_id) => {
-                    get_macos_app_global().stop_timer(timer_id);
+                    with_macos_app(|app| app.stop_timer(timer_id));
                 },
                 CxOsOp::StartDragging(items) => {
                     //  lets start dragging on the right window
@@ -522,7 +534,7 @@ impl Cx {
                     }
                 }
                 CxOsOp::UpdateMacosMenu(menu) => {
-                    get_macos_app_global().update_macos_menu(&menu)
+                    with_macos_app(|app| app.update_macos_menu(&menu))
                 },
                 CxOsOp::HttpRequest {request_id, request} => {
                     self.os.http_requests.make_http_request(request_id, request, self.os.network_response.sender.clone());
@@ -534,7 +546,7 @@ impl Cx {
                     crate::log!("Show clipboard actions not supported yet");
                 },
                 CxOsOp::CopyToClipboard(content) => {
-                    get_macos_app_global().copy_to_clipboard(&content);
+                    with_macos_app(|app| app.copy_to_clipboard(&content));
                 },
                 CxOsOp::PrepareVideoPlayback(_, _, _, _, _) => todo!(),
                 CxOsOp::BeginVideoPlayback(_) => todo!(),
@@ -547,22 +559,25 @@ impl Cx {
 
                 CxOsOp::SaveFileDialog(settings) => 
                 {
-                    get_macos_app_global().open_save_file_dialog(settings);
+                    with_macos_app(|app| app.open_save_file_dialog(settings));
                 }
                 
                 CxOsOp::SelectFileDialog(settings) => 
                 {
-                    get_macos_app_global().open_select_file_dialog(settings);                   
+                    with_macos_app(|app| app.open_select_file_dialog(settings));
                 }
                 
                 CxOsOp::SaveFolderDialog(settings) => 
                 {
-                    get_macos_app_global().open_save_folder_dialog(settings);
+                    with_macos_app(|app| app.open_save_folder_dialog(settings));
                 }
                 
                 CxOsOp::SelectFolderDialog(settings) => 
                 {
-                    get_macos_app_global().open_select_folder_dialog(settings);
+                    with_macos_app(|app| app.open_select_folder_dialog(settings));
+                }
+                CxOsOp::ShowInDock(show) => {
+                    with_macos_app(|app| app.show_in_dock(show));
                 }
             }
         }
@@ -615,6 +630,7 @@ impl CxOsApi for Cx {
         crate::error!("open_url not implemented on this platform");
     }
     
+    fn max_texture_width()->usize{16384}
     /*
     fn web_socket_open(&mut self, _url: String, _rec: WebSocketAutoReconnect) -> WebSocket {
         todo!()

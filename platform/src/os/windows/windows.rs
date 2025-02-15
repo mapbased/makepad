@@ -60,6 +60,7 @@ impl Cx {
                 cx.win32_event_callback(event, &mut d3d11_cx, &mut d3d11_windows)
             }
         }));
+        // the signal poll timer
         get_win32_app_global().start_timer(0, 0.008, true);
         cx.borrow_mut().call_event_handler(&Event::Startup);
         cx.borrow_mut().redraw_all();
@@ -205,12 +206,12 @@ impl Cx {
                 // send MouseUp
                 self.call_event_handler(&Event::MouseUp(MouseUpEvent {
                     abs: dvec2(-100000.0, -100000.0),
-                    button: 0,
+                    button: MouseButton::PRIMARY,
                     window_id: CxWindowPool::id_zero(),
                     modifiers: Default::default(),
                     time: 0.0
                 }));
-                self.fingers.mouse_up(0);
+                self.fingers.mouse_up(MouseButton::PRIMARY);
                 self.fingers.cycle_hover_area(live_id!(mouse).into());
             }
             Win32Event::KeyDown(e) => {
@@ -235,7 +236,10 @@ impl Cx {
                     self.handle_media_signals();
                     self.call_event_handler(&Event::Signal);
                 }
-                self.handle_action_receiver();
+                if SignalToUI::check_and_clear_action_signal() {
+                    self.handle_action_receiver();
+                }
+
                 if self.handle_live_edit() {
                     self.call_event_handler(&Event::LiveEdit);
                     self.redraw_all();
@@ -328,6 +332,8 @@ impl Cx {
                         window.win32_window.minimize();
                     }
                 },
+                CxOsOp::Deminiaturize(_window_id) => todo!(),
+                CxOsOp::HideWindow(_window_id) => todo!(),
                 CxOsOp::MaximizeWindow(window_id) => {
                     if let Some(window) = d3d11_windows.iter_mut().find( | w | w.window_id == window_id) {
                         window.win32_window.maximize();
@@ -410,6 +416,7 @@ impl Cx {
                 CxOsOp::SelectFileDialog(_) =>  todo!(),
                 CxOsOp::SaveFolderDialog(_) =>  todo!(),
                 CxOsOp::SelectFolderDialog(_) =>  todo!(),
+                CxOsOp::ShowInDock(_) => todo!()
             }
         }
         if geom_changes.len()>0{
